@@ -5,11 +5,10 @@ class RequestController {
 
     static async sendEmail(email: string) {
         try {
-            const data = await this.requestService.sendEmail(email)
-            console.log(data)
-            return false
-        } catch {
+            await this.requestService.sendEmail(email)
             return true
+        } catch {
+            return false
         }
     }
 }

@@ -1,22 +1,27 @@
 import { PropsWithChildren, createContext, useState } from "react"
 
-interface EmailContextProps {
+interface FormContextProps {
     email: string,
-    setEmail: (value: string) => any
+    setEmail: (value: string) => any,
+    agree: boolean,
+    setAgree: (value: boolean) => any,
 }
 
-export const EmailContext = createContext<EmailContextProps>(null!)
+export const FormContext = createContext<FormContextProps>(null!)
 
 const StoreContext = ({ children }: PropsWithChildren) => {
-    const [email, setEmail] = useState('')
+    const [email, setEmail] = useState(sessionStorage.getItem('email') || '')
+    const [agree, setAgree] = useState(false)
 
     return (
-        <EmailContext.Provider value={{
+        <FormContext.Provider value={{
             email,
-            setEmail
+            setEmail,
+            agree,
+            setAgree
         }}>
             {children}
-        </EmailContext.Provider>
+        </FormContext.Provider>
     )
 }
 

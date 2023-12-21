@@ -1,20 +1,18 @@
 import { useContext, useEffect, useState } from "react"
 import FormInput from "../../general/formInput/formInput"
-import { EmailContext } from "../../general/storeContext/storeContext"
-import { useHistory, useLocation, useParams } from "react-router"
+import { FormContext } from "../../general/storeContext/storeContext"
+import { useHistory, useLocation } from "react-router"
 import RequestController from "../../../controllers/requestController"
-
-interface PageParamps {
-    status?: string
-}
+import Popup from "../../general/popup/popup"
 
 const ConfirmPage = () => {
     const history = useHistory()
     const { search } = useLocation()
-    const { email } = useContext(EmailContext)
-    const [toastText, setToastText] = useState('')
-    const [isToastSuccess, setIsToastSuccess] = useState(false)
-    const [showToast, setShowToast] = useState(false)
+    const { email } = useContext(FormContext)
+    const [popupText, setPopupText] = useState('')
+    const [isPopupSuccess, setIsPopupSuccess] = useState(false)
+    const [showPopup, setShowPopup] = useState(false)
+    const [disableButtons, setDisableButtons] = useState(false)
 
     useEffect(() => {
         const searchParams = new URLSearchParams(search)
@@ -22,19 +20,19 @@ const ConfirmPage = () => {
 
         switch (status) {
             case 'success':
-                setToastText('Success')
-                setIsToastSuccess(true)
-                setShowToast(true)
+                setPopupText('Success')
+                setIsPopupSuccess(true)
+                setShowPopup(true)
                 break
             case 'error':
-                setToastText('Error')
-                setIsToastSuccess(false)
-                setShowToast(true)
+                setPopupText('Error')
+                setIsPopupSuccess(false)
+                setShowPopup(true)
                 break
             default:
-                setToastText('')
-                setIsToastSuccess(false)
-                setShowToast(false)
+                setPopupText('')
+                setIsPopupSuccess(false)
+                setShowPopup(false)
                 break
         }
     }, [search])
@@ -44,8 +42,17 @@ const ConfirmPage = () => {
     }
 
     const onSend = async () => {
-        const data = await RequestController.sendEmail(email)
-        console.log(data)
+        setDisableButtons(true)
+
+        const send = await RequestController.sendEmail(email)
+
+        if (send) {
+            history.push('/login/step-2?status=success')
+        } else {
+            history.push('/login/step-1?status=error')
+        }
+
+        setDisableButtons(false)
     }
 
     return (
@@ -55,20 +62,10 @@ const ConfirmPage = () => {
                 disabled
             />
             <div className="mt-auto grid grid-cols-2 gap-4">
-                <button className="btn btn-neutral" onClick={onBack}>Back</button>
-                <button className="btn btn-primary" onClick={onSend}>Confirm</button>
+                <button className="btn btn-neutral" onClick={onBack} disabled={disableButtons}>Back</button>
+                <button className="btn btn-primary" onClick={onSend} disabled={disableButtons}>Confirm</button>
             </div>
-            {
-                showToast
-                    ? (
-                        <div className="toast toast-top toast-center">
-                            <div className={`alert ${isToastSuccess ? 'alert-success' : 'alert-error'}`}>
-                                <span>{toastText}</span>
-                            </div>
-                        </div>
-                    )
-                    : null
-            }
+            {showPopup ? <Popup text={popupText} status={isPopupSuccess ? 'success' : 'error'} /> : null}
         </>
     )
 }
